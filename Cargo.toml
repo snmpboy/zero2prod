@@ -17,7 +17,6 @@ serde = { version = "1.0.206", features = ["derive"] }
 config = "0.13"
 uuid = { version = "1", features = ["v4"] }
 chrono = { version = "0.4.22", default-features = false, features = ["clock"] }
-tokio-postgres = "0.7.11"
 
 
 [dependencies.sqlx]
