@@ -1,7 +1,7 @@
 use actix_web::dev::Server;
 use actix_web::{App, HttpResponse, HttpServer, web};
 use std::net::TcpListener;
-use sqlx::{PgConnection, query};
+use sqlx::{PgConnection, PgPool, query};
 use uuid::Uuid;
 use chrono::Utc;
 use crate::routes::health_check;
@@ -13,7 +13,7 @@ pub struct FormatData {
 
 pub async fn subscribe(
     form: web::Form<FormatData>,
-    connection: web::Data<PgConnection>,
+    pool: web::Data<PgPool>,
 ) -> HttpResponse {
     sqlx::query!(
         r#"
@@ -27,12 +27,12 @@ pub async fn subscribe(
     )
         // We use `get_ref` to get an immutable reference to the `PgConnection`
         // wrapped by `web::Data`.
-        .execute(connection.get_ref())
+        .execute(pool.get_ref())
         .await;
     HttpResponse::Ok().finish()
 }
-pub fn run(listener: TcpListener, connection: PgConnection) -> Result<Server, std::io::Error>  {
-    let connection = web::Data::new(connection);
+pub fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Error>  {
+    let connection = web::Data::new(db_pool);
     let server = HttpServer::new(move ||  {
         App::new()
             .route("/health_check", web::get().to(health_check::health_check))
